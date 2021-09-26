@@ -756,7 +756,27 @@ class CumulativeTimeline:
         for event in self._timeline.events:
             if event.timestamp > time:
                 break
-            state._process_event(event)
+            state._process_event(event, -1)
+        return state
+
+    def get(self, time: Union[datetime.timedelta, str], championId, interval, callback):
+        if isinstance(time, str):
+            time = time.split(":")
+            time = datetime.timedelta(minutes=int(time[0]), seconds=int(time[1]))
+        state = ParticipantState(id=self._id, time=time, participant_timeline=self._timeline)
+
+        lastCallback = -1
+        for event in self._timeline.events:
+            #print(str(multiprocessing.current_process()) + " Processing event")
+            state._process_event(event, championId)
+            #print(str(multiprocessing.current_process()) + " Processed event")
+            if event.timestamp.seconds - interval > lastCallback:
+                #print(str(multiprocessing.current_process()) + " Starting callback")
+                callback(state, event.timestamp.seconds)
+                lastCallback = event.timestamp.seconds
+                #print(str(multiprocessing.current_process()) + " Done callback")
+
+        #print(str(multiprocessing.current_process()) + " Done processing")
         return state
 
 
@@ -784,9 +804,9 @@ class ParticipantState:
         self._level = 1
         self._processed_events = []
 
-    def _process_event(self, event: Event):
+    def _process_event(self, event: Event, championId):
         if "ITEM" in event.type:
-            self._item_state.process_event(event)
+            self._item_state.process_event(event, championId)
         elif "CHAMPION_KILL" == event.type:
             if event.killer_id == self._id:
                 self._kills += 1
@@ -806,11 +826,15 @@ class ParticipantState:
         else:
             #print(f"Did not process event {event.to_dict()}")
             pass
-        self._processed_events.append(event)
+        #self._processed_events.append(event)
 
     @property
     def items(self) -> SearchableList:
         return SearchableList([Item(id=id_, region="NA") for id_ in self._item_state._items])
+
+    @property
+    def fastItems(self) -> List:
+        return [id_ for id_ in self._item_state._items]
 
     @property
     def skills(self) -> Dict[Key, int]:
@@ -892,7 +916,7 @@ class _ItemState:
     def __str__(self):
         return str(self._items)
 
-    def process_event(self, event):
+    def process_event(self, event, championId):
         items_to_ignore = (2010, 3599, 3520, 3513, 2422, 2052)
         # 2422 is Slightly Magical Boots... I could figure out how to add those and Biscuits to the inventory based on runes but it would be manual...
         # 2052 is Poro-Snax, which gets added to inventory eventless
@@ -910,11 +934,12 @@ class _ItemState:
             self.add(event.item_id)
             self._events.append(event)
         elif event.type == "ITEM_DESTROYED":
-            self.destroy(event.item_id)
-            if event.item_id in upgradable_items:
-                # add the upgraded item
-                self.add(upgradable_items[event.item_id])
-            self._events.append(event)
+            if championId != 234:
+                self.destroy(event.item_id)
+                if event.item_id in upgradable_items:
+                    # add the upgraded item
+                    self.add(upgradable_items[event.item_id])
+                self._events.append(event)
         elif event.type == "ITEM_SOLD":
             self.destroy(event.item_id)
             self._events.append(event)
@@ -931,10 +956,10 @@ class _ItemState:
         try:
             self._items.remove(item)
         except ValueError as error:
-            if item in (3340, 3364, 2319, 2061, 2062, 2056, 2403, 2419, 3400, 2004, 2058, 3200, 2011, 2423, 2055, 2057, 2424, 2059, 2060, 2013, 2421, 3600):  # Something weird can happen with trinkets and klepto items
+            if item in (4638, 4641, 3857, 3853, 3860, 3330, 3863, 3855, 3859, 2052, 3851, 3340, 3364, 2319, 2061, 2062, 2056, 2403, 2419, 3400, 2004, 2058, 3200, 2011, 2423, 2055, 2057, 2424, 2059, 2060, 2013, 2421, 3600, 1035, 1055, 1056, 1054):  # Something weird can happen with trinkets and klepto items
                 pass
             else:
-                raise error
+                print("ERROR ITEM " + str(item))
         self._items.reverse()
 
     def undo(self, event: Event):
@@ -1446,7 +1471,7 @@ class Participant(CassiopeiaObject):
         # The bad thing about calling this here is that the runes won't be lazy loaded, so if the user only want the
         #  rune ids then there will be a needless call. That said, it's pretty nice functionality to have and without
         #  making a custom RunePage class, I believe this is the only option.
-        runes.keystone = keystone(runes)
+        #runes.keystone = keystone(runes)
         return runes
 
     @lazy_property
@@ -1456,6 +1481,11 @@ class Participant(CassiopeiaObject):
         runes = SearchableList([Rune(id=rune_id, version=version, region=self.__match.region)
                                 for rune_id in self._data[ParticipantData].stat_perks.values()])
         return runes
+
+    @lazy_property
+    @load_match_on_attributeerror
+    def stat_runes_fast(self) -> List[Rune]:
+        return [rune_id for rune_id in self._data[ParticipantData].stat_runes]
 
     @lazy_property
     @load_match_on_attributeerror
@@ -1487,6 +1517,18 @@ class Participant(CassiopeiaObject):
 
     @lazy_property
     @load_match_on_attributeerror
+    def summoner_spell_f_fast(self) -> int:
+        version = _choose_staticdata_version(self.__match)
+        return self._data[ParticipantData].summonerSpellFId
+
+    @lazy_property
+    @load_match_on_attributeerror
+    def summoner_spell_d_fast(self) -> int:
+        version = _choose_staticdata_version(self.__match)
+        return self._data[ParticipantData].summonerSpellDId
+
+    @lazy_property
+    @load_match_on_attributeerror
     def rank_last_season(self) -> Tier:
         return Tier(self._data[ParticipantData].rankLastSeason)
 
@@ -1501,6 +1543,12 @@ class Participant(CassiopeiaObject):
         # See ParticipantStats for info
         version = _choose_staticdata_version(self.__match)
         return Champion(id=self._data[ParticipantData].championId, version=version, region=self.__match.region)
+
+    @lazy_property
+    @load_match_on_attributeerror
+    def fastChampion(self) -> "Champion":
+        # See ParticipantStats for info
+        return self._data[ParticipantData].championId
 
     # All the summoner data from the match endpoint is passed through to the Summoner class.
     @lazy_property
@@ -1578,6 +1626,10 @@ class Team(CassiopeiaObject):
     def bans(self) -> List["Champion"]:
         version = _choose_staticdata_version(self.__match)
         return [Champion(id=ban.championId, version=version, region=self.__match.region) if ban.championId != -1 else None for ban in self._data[TeamData].bans]
+
+    @property
+    def fastBans(self) -> List["Champion"]:
+        return [champion_id if champion_id != -1 else None for champion_id in self._data[TeamData].bans]
 
     @property
     def rift_herald_kills(self) -> int:
