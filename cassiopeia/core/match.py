@@ -1028,6 +1028,10 @@ class ParticipantState:
         return [id_ for id_ in self._item_state._items]
 
     @property
+    def fastItems(self) -> List:
+        return [id_ for id_ in self._item_state._items]
+
+    @property
     def skills(self) -> Dict[Key, int]:
         skill_keys = {1: Key.Q, 2: Key.W, 3: Key.E, 4: Key.R}
         skills = {skill_keys[skill]: level for skill, level in self._skills.items()}
@@ -1215,7 +1219,7 @@ class _ItemState:
             ):  # Something weird can happen with trinkets and klepto items
                 pass
             else:
-                print("ERROR ITEM "+str(item))
+                print("ERROR ITEM " + str(item))
         self._items.reverse()
 
     def undo(self, event: Event):
