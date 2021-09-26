@@ -54,7 +54,7 @@ class MerakiAnalyticsCDN(DataSource):
     def get_patch_list(
         self, query: MutableMapping[str, Any], context: PipelineContext = None
     ) -> PatchListDto:
-        url = "https://cdn.merakianalytics.com/riot/lol/resources/patches.json"
+        url = "https://raw.githubusercontent.com/CommunityDragon/Data/master/patches.json"
         try:
             body = self._client.get(url)[0]
             body = json.decode(body)
