@@ -1875,6 +1875,12 @@ class Participant(CassiopeiaObject):
         # See ParticipantStats for info
         return self._data[ParticipantData].championId
 
+    @lazy_property
+    @load_match_on_attributeerror
+    def raw_champion(self) -> "Champion":
+        # See ParticipantStats for info
+        return self._data[ParticipantData].championId
+
     # All the summoner data from the match endpoint is passed through to the Summoner class.
     @lazy_property
     def summoner(self) -> Summoner:
