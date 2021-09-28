@@ -1472,6 +1472,11 @@ class Participant(CassiopeiaObject):
 
     @lazy_property
     @load_match_on_attributeerror
+    def raw_stat_runes(self) -> List[Rune]:
+        return [rune_id for rune_id in self._data[ParticipantData].stat_perks.values()]
+
+    @lazy_property
+    @load_match_on_attributeerror
     def timeline(self) -> ParticipantTimeline:
         timeline = ParticipantTimeline.from_data(match=self.__match)
         timeline.id = self.id
