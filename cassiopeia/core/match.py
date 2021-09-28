@@ -1773,6 +1773,11 @@ class Participant(CassiopeiaObject):
 
     @lazy_property
     @load_match_on_attributeerror
+    def raw_runes(self) -> List:
+        return [rune_id for rune_id, perk_vars in self._data[ParticipantData].perks.items()]
+
+    @lazy_property
+    @load_match_on_attributeerror
     def stat_runes(self) -> List[Rune]:
         version = _choose_staticdata_version(self.__match)
         runes = SearchableList(
