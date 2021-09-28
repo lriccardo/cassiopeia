@@ -1697,6 +1697,10 @@ class Participant(CassiopeiaObject):
         return Lane.from_match_naming_scheme(self._data[ParticipantData].teamPosition)
 
     @property
+    def raw_team_position(self) -> str:
+        return self._data[ParticipantData].teamPosition
+
+    @property
     def lane(self) -> Lane:
         return Lane.from_match_naming_scheme(
             self._data[ParticipantData].individualPosition
