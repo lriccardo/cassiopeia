@@ -1532,6 +1532,12 @@ class Participant(CassiopeiaObject):
         version = _choose_staticdata_version(self.__match)
         return Champion(id=self._data[ParticipantData].championId, version=version, region=self.__match.region)
 
+    @lazy_property
+    @load_match_on_attributeerror
+    def raw_champion(self) -> "Champion":
+        # See ParticipantStats for info
+        return self._data[ParticipantData].championId
+
     # All the summoner data from the match endpoint is passed through to the Summoner class.
     @lazy_property
     def summoner(self) -> Summoner:
