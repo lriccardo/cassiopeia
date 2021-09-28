@@ -2108,6 +2108,9 @@ class Match(CassiopeiaGhost):
             self._timeline = Timeline(id=self.id, region=self.region)
         return self._timeline
 
+    def timeline(self, timeline):
+        self.timeline = timeline
+
     @CassiopeiaGhost.property(MatchData)
     @ghost_load_on
     @lazy
