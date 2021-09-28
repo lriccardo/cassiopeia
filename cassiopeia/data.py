@@ -66,7 +66,7 @@ class Region(Enum):
         if self is Region.north_america:
             return Continent.americas
         if self is Region.oceania:
-            return Continent.asia  # TODO: Correct?
+            return Continent.americas
         if self is Region.turkey:
             return Continent.europe
         if self is Region.russia:
