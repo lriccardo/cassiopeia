@@ -1616,6 +1616,10 @@ class Team(CassiopeiaObject):
         return [Champion(id=ban.championId, version=version, region=self.__match.region) if ban.championId != -1 else None for ban in self._data[TeamData].bans]
 
     @property
+    def raw_bans(self) -> List["Champion"]:
+        return [banData.championId if banData.championId != -1 else None for banData in self._data[TeamData].bans]
+
+    @property
     def rift_herald_kills(self) -> int:
         return self._data[TeamData].objectives['riftHerald'].kills
 
