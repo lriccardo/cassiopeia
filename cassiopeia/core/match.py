@@ -1394,6 +1394,19 @@ class ParticipantStats(CassiopeiaObject):
             ]
         )
 
+    @lazy_property
+    @load_match_on_attributeerror
+    def raw_items(self) -> List[Item]:
+        ids = [self._data[ParticipantStatsData].item0,
+               self._data[ParticipantStatsData].item1,
+               self._data[ParticipantStatsData].item2,
+               self._data[ParticipantStatsData].item3,
+               self._data[ParticipantStatsData].item4,
+               self._data[ParticipantStatsData].item5,
+               self._data[ParticipantStatsData].item6
+        ]
+        return ids
+
     @property
     @load_match_on_attributeerror
     def items_purchased(self) -> int:
