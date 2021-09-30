@@ -953,7 +953,6 @@ class CumulativeTimeline:
         #print(str(multiprocessing.current_process()) + " Done processing")
         return state
 
-
 class ParticipantState:
     """The state of a participant at a given point in the timeline."""
 
