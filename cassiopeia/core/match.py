@@ -1189,6 +1189,9 @@ class _ItemState:
                 220004,
                 220005,
                 220006,
+                2138,
+                2139,
+                2140,
                 4638,
                 4641,
                 3857,
@@ -1207,7 +1210,7 @@ class _ItemState:
             ):  # Something weird can happen with trinkets and klepto items
                 pass
             else:
-                print("ERROR ITEM " + str(item))
+                print("ERROR ITEM "+str(item))
         self._items.reverse()
 
     def undo(self, event: Event):
