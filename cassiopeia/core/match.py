@@ -935,10 +935,10 @@ class _ItemState:
         try:
             self._items.remove(item)
         except ValueError as error:
-            if item in (3340, 3364, 2319, 2061, 2062, 2056, 2403, 2419, 3400, 2004, 2058, 3200, 2011, 2423, 2055, 2057, 2424, 2059, 2060, 2013, 2421, 3600):  # Something weird can happen with trinkets and klepto items
+            if item in (2138, 2139, 2140, 4638, 4641, 3857, 3853, 3860, 3330, 3863, 3855, 3859, 2052, 3851, 3340, 3364, 2319, 2061, 2062, 2056, 2403, 2419, 3400, 2004, 2058, 3200, 2011, 2423, 2055, 2057, 2424, 2059, 2060, 2013, 2421, 3600, 1035, 1055, 1056, 1054):  # Something weird can happen with trinkets and klepto items
                 pass
             else:
-                raise error
+                print("ERROR ITEM "+str(item))
         self._items.reverse()
 
     def undo(self, event: Event):
