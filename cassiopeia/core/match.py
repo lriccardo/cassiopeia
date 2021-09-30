@@ -756,9 +756,28 @@ class CumulativeTimeline:
         for event in self._timeline.events:
             if event.timestamp > time:
                 break
-            state._process_event(event)
+            state._process_event(event, -1)
         return state
 
+    def get(self, time: Union[datetime.timedelta, str], championId, interval, callback):
+        if isinstance(time, str):
+            time = time.split(":")
+            time = datetime.timedelta(minutes=int(time[0]), seconds=int(time[1]))
+        state = ParticipantState(id=self._id, time=time, participant_timeline=self._timeline)
+
+        lastCallback = -1
+        for event in self._timeline.events:
+            #print(str(multiprocessing.current_process()) + " Processing event")
+            state._process_event(event, championId)
+            #print(str(multiprocessing.current_process()) + " Processed event")
+            if event.timestamp.seconds - interval > lastCallback:
+                #print(str(multiprocessing.current_process()) + " Starting callback")
+                callback(state, event.timestamp.seconds)
+                lastCallback = event.timestamp.seconds
+                #print(str(multiprocessing.current_process()) + " Done callback")
+
+        #print(str(multiprocessing.current_process()) + " Done processing")
+        return state
 
 class ParticipantState:
     """The state of a participant at a given point in the timeline."""
@@ -784,9 +803,9 @@ class ParticipantState:
         self._level = 1
         self._processed_events = []
 
-    def _process_event(self, event: Event):
+    def _process_event(self, event: Event, championId):
         if "ITEM" in event.type:
-            self._item_state.process_event(event)
+            self._item_state.process_event(event, championId)
         elif "CHAMPION_KILL" == event.type:
             if event.killer_id == self._id:
                 self._kills += 1
@@ -896,7 +915,7 @@ class _ItemState:
     def __str__(self):
         return str(self._items)
 
-    def process_event(self, event):
+    def process_event(self, event, championId):
         items_to_ignore = (2010, 3599, 3520, 3513, 2422, 2052)
         # 2422 is Slightly Magical Boots... I could figure out how to add those and Biscuits to the inventory based on runes but it would be manual...
         # 2052 is Poro-Snax, which gets added to inventory eventless
@@ -914,11 +933,12 @@ class _ItemState:
             self.add(event.item_id)
             self._events.append(event)
         elif event.type == "ITEM_DESTROYED":
-            self.destroy(event.item_id)
-            if event.item_id in upgradable_items:
-                # add the upgraded item
-                self.add(upgradable_items[event.item_id])
-            self._events.append(event)
+            if championId != 234:
+                self.destroy(event.item_id)
+                if event.item_id in upgradable_items:
+                    # add the upgraded item
+                    self.add(upgradable_items[event.item_id])
+                self._events.append(event)
         elif event.type == "ITEM_SOLD":
             self.destroy(event.item_id)
             self._events.append(event)
