@@ -410,7 +410,10 @@ class MatchData(CoreData):
         if "gameCreation" in kwargs:
             self.creation = arrow.get(kwargs["gameCreation"] / 1000)
         if "gameDuration" in kwargs:
-            self.duration = datetime.timedelta(seconds=kwargs["gameDuration"])
+            if "gameEndTimestamp" in kwargs:
+                self.duration = datetime.timedelta(seconds=kwargs["gameDuration"] / 1000)
+            else:
+                self.duration = datetime.timedelta(seconds=kwargs["gameDuration"])
         if "gameStartTimestamp" in kwargs:
             self.start = arrow.get(kwargs["gameStartTimestamp"] / 1000)
 
