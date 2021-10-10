@@ -2203,6 +2203,19 @@ class Match(CassiopeiaGhost):
             patch = Patch.from_date(date, region=self.region)
         return patch
 
+    @property
+    def raw_patch(self) -> Patch:
+        patch_name = None
+        if hasattr(self._data[MatchData], "version"):
+            version = ".".join(self.version.split(".")[:2])
+            patch_name = version
+        else:
+            date = self.creation
+            patch = Patch.from_date(date, region=self.region)
+            if patch:
+                patch_name = patch.name
+        return patch_name
+
     @CassiopeiaGhost.property(MatchData)
     @ghost_load_on
     @lazy
