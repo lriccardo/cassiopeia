@@ -927,6 +927,7 @@ class _ItemState:
             3854: 3855, 3855: 3857, # Steel Shoulderguards -> Runesteel Spaulders -> Pauldrons of Whiterock
             3858: 3859, 3859: 3860, # Relic Shield -> Targon's Buckler -> Bulwark of the Mountain
             3862: 3863, 3863: 3864, # Spectral Sickle -> Harrowing Crescent -> Black Mist Scythe
+            3003: 3040, 3004: 3042, # Tear
         }
         item_id = getattr(event, 'item_id', getattr(event, 'before_id', None))
         assert item_id is not None
