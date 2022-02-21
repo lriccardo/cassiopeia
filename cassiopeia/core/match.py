@@ -1131,6 +1131,7 @@ class _ItemState:
             3863: 3864,  # Spectral Sickle -> Harrowing Crescent -> Black Mist Scythe
             3003: 3040,
             3004: 3042, # Tear
+            3119: 3121,
         }
         item_id = getattr(event, "item_id", getattr(event, "before_id", None))
         assert item_id is not None
