@@ -1866,13 +1866,11 @@ class Participant(CassiopeiaObject):
     @lazy_property
     @load_match_on_attributeerror
     def raw_summoner_spell_f(self) -> int:
-        version = _choose_staticdata_version(self.__match)
         return self._data[ParticipantData].summonerSpellFId
 
     @lazy_property
     @load_match_on_attributeerror
     def raw_summoner_spell_d(self) -> int:
-        version = _choose_staticdata_version(self.__match)
         return self._data[ParticipantData].summonerSpellDId
 
     @lazy_property
